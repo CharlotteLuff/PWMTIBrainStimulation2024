@@ -1,0 +1,87 @@
+If this is the first time you are going to use the Aberra models I recommend you read Aberra et al. 2018 and visit: 
+https://senselab.med.yale.edu/modeldb/ShowModel.cshtml?model=241165#tabs-2
+You can find information such as how to open these files in NEURON in different OS, and how to add new models here.
+
+This code within the folder AberraCode allows you to stimulate realistic biophsical models with Sinusoidal Temporal Interference (TI) or pulse width modulation (PWM) Temporal Interference (renamed Square TI) with extracellular intracortical microstimulation (ICMS), or uniform E-field distribution currents (See Aberra et al. 2018 for more info about the extracellular currents). 
+
+***
+Code by Jose Portillo in the AberraCode folder, allows you to run three protocols which do the following:
+
+1. Find the AP threshold for stimulation with varying parameters (difference and carrier frequencies) and save example membrane voltages in response to sub- and supra-threshold stimulation
+2. Obtain membrane voltages for stimulation with varying parameters at a specific amplitude
+3. Block ion channels in the cell (can be used in conjunction with 1 and 2)
+ 
+***
+
+n.b. Before opening NEURON 
+Make sure you have python, pip and matplotlib installed (in Linux at least).
+
+If running protocol 1 (to find thresholds):
+
+1. Update the cfrequencies file in the AberraCode folder to contain the carrier frequencies you wish to run through. The first row should contain the number of carrier frequency conditions and you should write one carrier freqeuncy per row after that.
+
+E.g. to test carrier frequencies of 10, 100 and 1000Hz write:
+
+3
+10
+100
+1000
+
+2. Update the dfrequencies file in the AberraCode folder to contain the difference frequencies you wish to run through. The first row should contain the number of difference frequency conditions and you should write one difference freqeuncy per row after that.
+
+E.g. to test difference frequencies of 5 and 10Hz write:
+
+2
+5
+10
+
+If running protocol 2 (to find response at specific amplitudes)
+
+1. Update the Amplitudes file in the AberraCode folder to contain the amplitudes you wish to run through. The first row should contain the number od amplitudes and you should write one amplitude per row after that/
+
+E.g. to test amplitudes of 50 and 100 V/m (uniform E-field) or uA (ICMS)
+
+2
+50 
+100
+
+***
+
+To open NEURON in LINUX OS and start the GUI:
+
+1. Open Terminal
+2. Change current directory to folder with the Aberra code in it e.g. $ cd Documents/NEURON/AberraCode
+3. Install NEURON $ sudo apt install neuron
+4. Open the NEURON GUI $ ./mosinit.command
+Several GUI windows should appear.
+
+***
+
+To run stimulation and simulation:
+
+1 Select the cell you want to stimulate from the "Choose Cell" window
+2 Select "Set to Adult Rat" or "Set to Adult Human" and click reload cell in the "Choose parameters" window)
+3 Click which kind of extracellular current you prefer to use ("ICMS" or "uniform E-field") in the "Spatial parameters for extracellular stimulation" window and modify its parameters according to your preference. Type enter after the number if you change any parameter to update it 
+4 In the "Waveform Parameters" window, select Sin TI or PWM TI and modify the TI parameters you wish to use, except for amplitude, carrier frequency and pulse (difference) frequency. In PWM TI, Pulse Width parameter does not work, however in Sinusoidal TI it does and by modifying it, the duty cycle is changed (only in Sin TI, in PWM TI change the duty cyle directly). The percentage parameter is explained in the step 6
+5 In the "Run control window" you can change the length of time each simulation is run for (Tstop(ms)), and the dt/sampling frequency (dt(ms)/Points plotted/ms). When you change the number, type enter afterwards to update. 
+If you wish to run a single simulation:
+Once you have done the previous steps and selected the carrier frequency, pulse (difference) frequency and amplitude in the "Waveform parameters" window and the simulation parameters in the "RunControl" window you can press the Init & Run button in the "RunControl window" to run a single simulation
+6 In the "Simulation type" window, select the simulation you want to perform: 
+(1) "Search threshold" looks for the threshold at particular carrier and difference frequencies (specified in the cfrequencies, dfrequencies files respectively 		(described above)). In protocol 1, the algorithm looks for the threshold and obtains the responses at x % (change this value in Percentage (%) in the "Waveform parameters" window) below and above the threshold amplitude value. Therefore, it obtains the membrane voltage 	responses at sub and supratheshold levels. The threshold values and the number of spikes (for the suprathreshold response) are typed in a file called threspike.dat which will appear on the same directory as the code. The data files which contain the membrane voltage traces at the sub- and supra-threshold levels, will appear in the same directory as the code and will be named in the following way: 
+neuronCompartment_TImodality_CF_DF_Sub or Supra.dat.
+(2) "Set CF, DF and Amplitude" obtains the responses at particular amplitudes, carrier frequencies and difference frequencies (specified in the cfrequencies, dfrequencies and Amplitudes files respectively (described above)). The data files which contain the membrane voltage traces at the specified amplitudes will appear on the same directory and will be named in the following way: neuronCompartment_TImodality_CF_DF_AmplitudeValue.dat. 
+(3) You can block all ion channels by pressing "Block channels" in the "Simulation type" window to investigate the passive properties of the cells. To unblock the channels go to step 2 and reload the cell model. Block channels can be used in conjuction with protocol 1 and 2 or when running a single simulation. 
+Saved in the .dat data files produced when running protocol 1 or 2, are the time vector (column 1), transmembrane voltage (column 2) and the corresponding ionic currents for the specified stimulation (other columns). 
+
+***
+
+All the voltage measurements are taken from the soma, apical dendrite and axon termination.
+
+To change the compartments from which measurments are taken:
+The compartments which are measured can be selected in the model hoc files (e.g. PC6.hoc). 
+
+To add new cell type models:
+To run the simulation on new cell models, a file such as PC6.hoc must be created with the same procedures (proc) names. As the ion channels are cell/model-dependant, the currents in this new file must be changed. You may have to create a new vector in stimTIWaveform.hoc to record the ionic currents. Do not change the vector names. After creating the new file, go to stimTIWaveform.hoc and add in the if-else block the new hoc file and the condition to call its respective cell_id (The cell_id is what appears in the "Choose cell" window). 
+
+When you add a new model, a block procedure must be added in the new model hoc file. Be careful to specifcy the correct channel types.
+

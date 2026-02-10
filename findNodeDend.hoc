@@ -1,0 +1,29 @@
+//To find the node I prefer to mmeasure the parameters
+
+proc findNode(){
+    y = Node[0].y_xtra(0.5)
+    for i=0,83{
+      if (Node[i].y_xtra(0.5)<y){
+          y = Node[i].y_xtra(0.5)
+          num = i
+      }
+  }
+  x = Node[num].x_xtra(0.5)
+  z = Node[num].z_xtra(0.5)
+  type = Node[num].type_xtra(0.5)
+  printf("%g, %g, %g, %g, %g \n\n", x, y, z, num, type)
+}
+
+proc findDend(){
+    y = cell.dend[0].y_xtra(0.9)
+    for i=0,65{
+      if (cell.dend[i].y_xtra(0.9)>y){
+          y = cell.dend[i].y_xtra(0.9)
+          num = i
+      }
+  }
+  x = cell.dend[num].x_xtra(0.9)
+  z = cell.dend[num].z_xtra(0.9)
+  type = cell.dend[num].type_xtra(0.9)
+  printf("%g, %g, %g, %g, %g \n\n", x, y, z, num, type)
+}

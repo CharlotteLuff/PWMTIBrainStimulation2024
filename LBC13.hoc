@@ -1,0 +1,182 @@
+proc comparmentrec(){
+    somt.record(&t)
+    somv.record(&cell.soma[0].v(0.5))
+    somina.record(&cell.soma[0].ina(0.5))
+    sominats2.record(&cell.soma[0].ina_NaTs2_t(0.5))
+    sominap.record(&cell.soma[0].ina_Nap_Et2(0.5))
+    somik.record(&cell.soma[0].ik(0.5))
+    somikim.record(&cell.soma[0].ik_Im(0.5))
+    somikps.record(&cell.soma[0].ik_K_Pst(0.5))
+    somikts.record(&cell.soma[0].ik_K_Tst(0.5))
+    somikE2.record(&cell.soma[0].ik_SK_E2(0.5))
+    somikv3.record(&cell.soma[0].ik_SKv3_1(0.5))
+    somca.record(&cell.soma[0].ica(0.5))
+    somcaCa.record(&cell.soma[0].ica_Ca(0.5))
+    somcaLVA.record(&cell.soma[0].ica_Ca_LVAst(0.5))
+    somcap.record(&cell.soma[0].i_cap(0.5))
+    sompas.record(&cell.soma[0].i_pas(0.5))
+
+    dent.record(&t)
+    denv.record(&cell.dend[71].v(0.9))
+    denina.record(&cell.dend[71].ina(0.9))
+    deninats2.record(&cell.dend[71].ina_NaTs2_t(0.9))
+    deninap.record(&cell.dend[71].ina_Nap_Et2(0.9))
+    denik.record(&cell.dend[71].ik(0.9))
+    denikim.record(&cell.dend[71].ik_Im(0.9))
+    denikps.record(&cell.dend[71].ik_K_Pst(0.9))
+    denikts.record(&cell.dend[71].ik_K_Tst(0.9))
+    denikv3.record(&cell.dend[71].ik_SKv3_1(0.9))
+    denih.record(&cell.dend[71].ihcn_Ih(0.9))
+    dencap.record(&cell.dend[71].i_cap(0.9))
+    denpas.record(&cell.dend[71].i_pas(0.9))
+
+    axt.record(&t)
+    axv.record(&Node[428].v(0.5))
+    axina.record(&Node[428].ina(0.5))
+    axinata.record(&Node[428].ina_NaTa_t(0.5))
+    axinap.record(&Node[428].ina_Nap_Et2(0.5))
+    axik.record(&Node[428].ik(0.5))
+    axikps.record(&Node[428].ik_K_Pst(0.5))
+    axikts.record(&Node[428].ik_K_Tst(0.5))
+    axikv3.record(&Node[428].ik_SKv3_1(0.5))
+    axicap.record(&Node[428].i_cap(0.5))
+    axipas.record(&Node[428].i_pas(0.5))
+}
+
+
+objref sommatrix, denmatrix, axmatrix
+
+objref somsavdata, densavdata, axsavdata
+somsavdata = new File()
+densavdata = new File()
+axsavdata = new File()
+
+//SAVE the response
+proc somaresponse(){
+    sommatrix = new Matrix()
+    sommatrix.resize(somt.size(),16)
+    sommatrix.setcol(0, somt)
+    sommatrix.setcol(1, somv)
+    sommatrix.setcol(2, somina)
+    sommatrix.setcol(3, sominats2)
+    sommatrix.setcol(4, sominap)
+    sommatrix.setcol(5, somik)
+    sommatrix.setcol(6, somikim)
+    sommatrix.setcol(7, somikps)
+    sommatrix.setcol(8, somikts)
+    sommatrix.setcol(9, somikE2)
+    sommatrix.setcol(10, somikv3)
+    sommatrix.setcol(11, somca)
+    sommatrix.setcol(12, somcaCa)
+    sommatrix.setcol(13, somcaLVA)
+    sommatrix.setcol(14, somcap)
+    sommatrix.setcol(15, sompas)
+    sommatrix.fprint(somsavdata, " %g")
+    somsavdata.close()
+}
+
+proc dendresponse(){
+    denmatrix = new Matrix()
+    denmatrix.resize(dent.size(),13)
+    denmatrix.setcol(0, dent)
+    denmatrix.setcol(1, denv)
+    denmatrix.setcol(2, denina)
+    denmatrix.setcol(3, deninats2)
+    denmatrix.setcol(4, deninap)
+    denmatrix.setcol(5, denik)
+    denmatrix.setcol(6, denikim)
+    denmatrix.setcol(7, denikps)
+    denmatrix.setcol(8, denikts)
+    denmatrix.setcol(9, denikv3)
+    denmatrix.setcol(10, denih)
+    denmatrix.setcol(11, dencap)
+    denmatrix.setcol(12, denpas)
+    denmatrix.fprint(densavdata, " %g")
+    densavdata.close()
+}
+
+proc axresponse(){
+    axmatrix = new Matrix()
+    axmatrix.resize(axt.size(),11)
+    axmatrix.setcol(0, axt)
+    axmatrix.setcol(1, axv)
+    axmatrix.setcol(2, axina)
+    axmatrix.setcol(3, axinata)
+    axmatrix.setcol(4, axinap)
+    axmatrix.setcol(5, axik)
+    axmatrix.setcol(6, axikps)
+    axmatrix.setcol(7, axikts)
+    axmatrix.setcol(8, axikv3)
+    axmatrix.setcol(9, axicap)
+    axmatrix.setcol(10, axipas)
+    axmatrix.fprint(axsavdata, " %g")
+    axsavdata.close()
+}
+
+
+proc block(){
+
+  forsec Node_secList {
+      for(x,0){
+          gNaTa_tbar_NaTa_t = 0
+          gNap_Et2bar_Nap_Et2 = 0
+          gK_Pstbar_K_Pst = 0
+          gK_Tstbar_K_Tst = 0
+          gSKv3_1bar_SKv3_1 = 0
+          // g_pas = 0
+      }
+  }
+
+  forsec Unmyelin_secList{
+      for(x,0){
+        gNaTa_tbar_NaTa_t = 0
+        gNap_Et2bar_Nap_Et2 = 0
+        gK_Pstbar_K_Pst = 0
+        gK_Tstbar_K_Tst = 0
+        gSKv3_1bar_SKv3_1 = 0
+        // g_pas = 0
+      }
+  }
+
+   forsec Myelin_secList{
+      for(x,0){
+        // g_pas = 0
+      }
+  }
+
+  forsec cell.somatic {
+  		gNaTs2_tbar_NaTs2_t = 0
+        gSKv3_1bar_SKv3_1 = 0
+        gCabar_Ca = 0
+        gSK_E2bar_SK_E2 = 0
+        gCa_LVAstbar_Ca_LVAst = 0
+        gNap_Et2bar_Nap_Et2 = 0
+        gImbar_Im = 0
+        gK_Pstbar_K_Pst = 0
+        gK_Tstbar_K_Tst = 0
+        // g_pas = 0
+  }
+
+  	forsec cell.apical {
+        gNaTs2_tbar_NaTs2_t = 0
+        gImbar_Im = 0
+        gSKv3_1bar_SKv3_1 = 0
+        gIhbar_Ih = 0
+        gNap_Et2bar_Nap_Et2 = 0
+        gK_Pstbar_K_Pst = 0
+        gK_Tstbar_K_Tst = 0
+        // g_pas = 0
+  	}
+
+  	forsec cell.basal {
+        gNaTs2_tbar_NaTs2_t = 0
+        gSKv3_1bar_SKv3_1 = 0
+        gNap_Et2bar_Nap_Et2 = 0
+        gIhbar_Ih = 0
+        gImbar_Im = 0
+        gK_Pstbar_K_Pst = 0
+        gK_Tstbar_K_Tst = 0
+        // g_pas = 0
+  	}
+    printf("Channels blocked. To unblock them please press reload cell\n\n")
+}

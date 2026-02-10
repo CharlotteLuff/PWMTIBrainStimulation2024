@@ -1,0 +1,46 @@
+objref maux
+maux = new Matrix()
+
+objref recvaux
+recvaux = new Vector()
+
+proc searchThresh(){
+    recvaux.record(&cell.soma[0].v(0.5))
+    check2 = 0 //Check the algorithm cannot find a thresholdvalue for certain CF and PF
+    AMP = 50
+    runstim(CF,PF,DC,AMP,AMP_R1,AMP_R2,STIM,RAMP_UP,RAMP_DOWN,PER,0)
+    run()
+    //There must be a spike during stim time
+    while(thre.n==0 || recvaux.max((pre_t+ramp_up_t)/dt,(pre_t+ramp_up_t+stim_t)/dt)<0){
+        AMP = AMP * 1.5
+        runstim(CF,PF,DC,AMP,AMP_R1,AMP_R2,STIM,RAMP_UP,RAMP_DOWN,PER,0)
+        run()
+        print(AMP)
+        if(AMP>5000){
+            printf("The algorithm has not found a threhsold for CF: %g and DF: %g \n", CF, PF)
+            check2 = 1
+            break
+        }
+    }
+
+    if (check2 == 0){ //Binary search to find the threshold
+        maux.resize(2,2)
+        maux.x[0][0] = 5
+        maux.x[0][1] = 0
+        maux.x[1][0] = AMP
+        maux.x[1][1] = thre.n
+
+        while((maux.x[1][0]-maux.x[0][0])>1 || recvaux.max((pre_t+ramp_up_t)/dt,(pre_t+ramp_up_t+stim_t)/dt)<0){
+            aux = (maux.x[1][0] + maux.x[0][0])/2
+            runstim(CF,PF,DC,aux,AMP_R1,AMP_R2,STIM,RAMP_UP,RAMP_DOWN,PER,0)
+            run()
+            if (thre.n >= 2){
+                maux.x[1][0] = aux
+            }else{
+                maux.x[0][0] = aux
+            }
+        }
+        AMP = maux.x[1][0]
+        printf("The threshold is around %g mV \n",AMP)
+    }
+}

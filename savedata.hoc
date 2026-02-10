@@ -1,0 +1,138 @@
+objref ca_freq, dif_freq, amps, vecperc, threspike //Freq and Percentage Vectors, record and thres-spike matrix
+objectvar cfreq, dfreq, spiking_amp//Files
+
+//Create threspike file to save threshold value and number of spikes
+objref threspikef
+threspikef = new File()
+
+//To change response files names
+strdef extension, somname, dendname, axname, sominit, dendinit, axinit, maxvoltage
+extension = "dat"
+maxvoltage = "max"
+sominit = "soma"
+dendinit = "dend"
+axinit = "axon"
+
+//TI modality (to name the folder)
+objref TI_mod, pol
+strdef tsr01, tsr02
+TI_mod = new List()
+pol = new List()
+
+//Lists to change files names
+for i=1,2 {getstr(tsr01,1) TI_mod.append(new String(tsr01))}
+sin
+pwm
+
+for i=1,2 {getstr(tsr02,1) pol.append(new String(tsr02))}
+sub
+supra
+
+//Percentage vector
+vecperc = new Vector(2)
+vecperc.x[0] = -PER
+vecperc.x[1] = PER
+
+//To build vectors with CF, DF and Amplitude
+cfreq = new File()
+dfreq = new File()
+spiking_amp = new File()
+cfreq.ropen("cfrequencies")
+dfreq.ropen("dfrequencies")
+spiking_amp.ropen("Amplitudes")
+
+num_ca_freq = cfreq.scanvar()
+num_dif_freq = dfreq.scanvar()
+num_ampls = spiking_amp.scanvar()
+
+ca_freq = new Vector(num_ca_freq)
+dif_freq = new Vector(num_dif_freq)
+amps = new Vector(num_ampls)
+
+for i=0,num_ca_freq-1{
+    ca_freq.x[i] = cfreq.scanvar()
+}
+
+for i=0,num_dif_freq-1{
+    dif_freq.x[i] = dfreq.scanvar()
+}
+
+for i=0,num_ampls-1{
+    amps.x[i] = spiking_amp.scanvar()
+}
+
+//Find theshold and save the responses for certain CF and DF
+proc threshResponse(){
+    threspikef.wopen("threspike.dat")
+    //Save number threhsold amplitude and number of spikes for supratheshold response
+    threspike = new Matrix(num_ca_freq*num_dif_freq,4)
+    a = 0
+    for i=0,num_ca_freq-1{
+        CF = ca_freq.x[i]
+        for j=0,num_dif_freq-1{
+            PF = dif_freq.x[j]
+            PW = 200
+            searchThresh() //find threshold for certain CF and DF
+            threspike.x[a][0] = CF
+            threspike.x[a][1] = PF
+
+            if (check2 == 0){
+                threspike.x[a][2] = AMP
+                for k=0,vecperc.size()-1{
+                    runstim(CF,PF,DC,AMP + (AMP*vecperc.x[k]/100),AMP_R1,AMP_R2,STIM,RAMP_UP,RAMP_DOWN,PER,0)
+                    run()
+                    //Name files with responses
+                    sprint(somname, "%s_%s_%d_%d_%s.%s", sominit, TI_mod.o(waveform_mode-1).s, CF, PF, pol.o(k).s, extension)
+                    sprint(dendname, "%s_%s_%d_%d_%s.%s", dendinit, TI_mod.o(waveform_mode-1).s, CF, PF,  pol.o(k).s, extension)
+                    sprint(axname, "%s_%s_%d_%d_%s.%s", axinit, TI_mod.o(waveform_mode-1).s, CF, PF,  pol.o(k).s, extension)
+                    somsavdata.wopen(somname)
+                    densavdata.wopen(dendname)
+                    axsavdata.wopen(axname)
+                    somaresponse()
+                    dendresponse()
+                    axresponse()
+                }
+                threspike.x[a][3] = thre.n
+            } else {
+                threspike.x[a][2] = 0
+            }
+            a += 1
+        }
+    }
+    threspike.fprint(threspikef, " %g")
+    threspikef.close()
+}
+
+//Save responses for particular CF, DF and amplitudes
+proc AmplResponse(){
+
+    for k=0,num_ampls-1{
+        for i=0,num_ca_freq-1{
+            CF = ca_freq.x[i]
+            for j=0,num_dif_freq-1{
+                PF = dif_freq.x[j]
+                PW = 200
+                runstim(CF,PF,DC,amps.x[k],AMP_R1,AMP_R2,STIM,RAMP_UP,RAMP_DOWN,PER,0)
+                run()
+                sprint(somname, "%s_%s_%d_%d_%d.%s", sominit, TI_mod.o(waveform_mode-1).s, CF, PF, amps.x[k], extension)
+                sprint(dendname, "%s_%s_%d_%d_%d.%s", dendinit, TI_mod.o(waveform_mode-1).s, CF, PF, amps.x[k], extension)
+                sprint(axname, "%s_%s_%d_%d_%d.%s", axinit, TI_mod.o(waveform_mode-1).s, CF, PF, amps.x[k], extension)
+                somsavdata.wopen(somname)
+                densavdata.wopen(dendname)
+                axsavdata.wopen(axname)
+                somaresponse()
+                dendresponse()
+                axresponse()
+            }
+        }
+    }
+}
+
+
+proc createPanels2(){
+    xpanel("Simulation type",0)
+        xbutton("Search threshold", "threshResponse()")
+        xbutton("Set CF, DF and Ampl", "AmplResponse()")
+        xbutton("Block channels","block()")
+    xpanel(250,100)
+}
